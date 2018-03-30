@@ -13,6 +13,6 @@ set(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
            "${CMAKE_CURRENT_SOURCE_DIR}/src/Field.h"
            "${CMAKE_CURRENT_SOURCE_DIR}/src/Influence.h"
            "${CMAKE_CURRENT_SOURCE_DIR}/src/SimpleGradient.cpp"
-           "${CMAKE_CURRENT_SOURCE_DIR}/src/SimpleGradient.h" src/FoodInfluence.cpp src/FoodInfluence.h src/RandomInfluence.cpp src/RandomInfluence.h)
+           "${CMAKE_CURRENT_SOURCE_DIR}/src/SimpleGradient.h" src/FoodInfluence.cpp src/FoodInfluence.h src/RandomInfluence.cpp src/RandomInfluence.h src/EnemyInfluence.cpp src/EnemyInfluence.h)
 
 add_executable(strategy ${SOURCE} ${DEPS_SOURCE})

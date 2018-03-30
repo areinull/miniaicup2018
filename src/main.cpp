@@ -8,15 +8,13 @@
 #include "SimpleGradient.h"
 #include "FoodInfluence.h"
 #include "RandomInfluence.h"
+#include "EnemyInfluence.h"
 
 using namespace std;
 using json = nlohmann::json;
 
-struct Strategy {
-    unsigned int curTick_ = 0;
-    std::unique_ptr<Field> f_;
-    std::unique_ptr<RandomInfluence> randomInfluence_;
-
+class Strategy {
+public:
     void run() {
         string data;
         cin >> data;
@@ -33,36 +31,46 @@ struct Strategy {
         while (true) {
             cin >> data;
             auto parsed = json::parse(data);
-            auto command = on_tick(parsed, config);
+            auto command = on_tick_(parsed, config);
             cout << command.dump() << endl;
             ++curTick_;
         }
     }
 
-    json on_tick(const json &data, const json &config) {
+private:
+    json on_tick_(const json &data, const json &config) {
         f_->reset();
-        if (curTick_%50 == 0) {
-            randomInfluence_->update();
-        }
         auto mine = data["Mine"];
         auto objects = data["Objects"];
-        if (!mine.empty()) {
-            auto first = mine[0];
-            for (auto &obj : objects) {
-                if (obj["T"] == "F") {
-                    f_->applyInfluence(FoodInfluence({obj["X"].get<int>(), obj["Y"].get<int>()}));
-                }
-            }
-            f_->applyInfluence(*randomInfluence_);
-            const auto dst = f_->getMin();
-            return {{"X", dst.x},
-                    {"Y", dst.y},
-                    {"Split", rand() % 100 > 95}};
+
+        if ((V2d{mine[0]["X"].get<float>(), mine[0]["Y"].get<float>()} - randomInfluence_->getDst()).getNormSq() < 100.f) {
+            randomInfluence_->update();
         }
-        return {{"X",     0},
-                {"Y",     0},
-                {"Debug", "Died"}};
+
+        if (mine.empty()) {
+            return {{"X",     0},
+                    {"Y",     0},
+                    {"Debug", "Died"}};
+        }
+
+        for (auto &obj : objects) {
+            if (obj["T"] == "F") {
+                f_->applyInfluence(FoodInfluence({obj["X"].get<float>(), obj["Y"].get<float>()}));
+            } else if (obj["T"] == "P") {
+                f_->applyInfluence(EnemyInfluence(mine, obj));
+            }
+        }
+        f_->applyInfluence(*randomInfluence_);
+        const auto dst = f_->getMin();
+        return {{"X",     dst.x},
+                {"Y",     dst.y},
+                {"Split", rand() % 100 > 98}};
     }
+
+
+    unsigned int curTick_ = 0;
+    std::unique_ptr<Field> f_;
+    std::unique_ptr<RandomInfluence> randomInfluence_;
 };
 
 int main() {

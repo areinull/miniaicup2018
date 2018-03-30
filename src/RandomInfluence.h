@@ -11,6 +11,7 @@ public:
     RandomInfluence(float w, float h);
     float probe(const V2d &v) const override;
     void update();
+    const V2d& getDst() const { return dst_; }
 
 private:
     const float w_;
