@@ -4,7 +4,7 @@ EnemyInfluence::EnemyInfluence(const nlohmann::json &mine, const nlohmann::json 
         : enemyPos_{enemy["X"].get<float>(), enemy["Y"].get<float>()}, enemyPotential_(0.f),
           enemyRadius_(enemy["R"].get<float>()) {
     float myMinMass = std::numeric_limits<float>::max();
-    for (auto &&mpart: mine) {
+    for (auto &mpart: mine) {
         myMinMass = std::min(myMinMass, mpart["M"].get<float>());
     }
     const auto enemyMass = enemy["M"].get<float>();
@@ -16,5 +16,5 @@ EnemyInfluence::EnemyInfluence(const nlohmann::json &mine, const nlohmann::json 
 }
 
 float EnemyInfluence::probe(const V2d &v) const {
-    return (v - enemyPos_).getNormSq() < 3.f * enemyRadius_ ? enemyPotential_ : 0.f;
+    return (v - enemyPos_).getNormSq() < 9.f * enemyRadius_ * enemyRadius_ ? enemyPotential_ : 0.f;
 }

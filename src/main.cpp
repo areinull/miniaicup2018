@@ -49,7 +49,52 @@ private:
                     {"Debug", "Died"}};
         }
 
-        if ((V2d{mine[0]["X"].get<float>(), mine[0]["Y"].get<float>()} - randomInfluence_->getDst()).getNormSq() < 100.f) {
+        // check shoot
+        do {
+            if (objects.empty())
+                break;
+            float maxEnemyMass = -1.f;
+            float maxEnemyX, maxEnemyY;
+            for (auto &obj : objects) {
+                if (obj["T"] == "P") {
+                    const auto mass = obj["M"].get<float>();
+                    if (mass > maxEnemyMass) {
+                        maxEnemyMass = mass;
+                        maxEnemyX = obj["X"].get<float>();
+                        maxEnemyY = obj["Y"].get<float>();
+                    }
+
+                }
+            }
+            if (maxEnemyMass < 0.f)
+                break;
+
+            auto myMinMass = std::numeric_limits<float>::max();
+            V2d vel;
+            for (auto &mpart : mine) {
+                const auto mass = mpart["M"].get<float>();
+                if (mass < myMinMass) {
+                    myMinMass = mass;
+                    vel.x = mpart["SX"].get<float>();
+                    vel.y = mpart["SY"].get<float>();
+                }
+            }
+            if (myMinMass / 2.f < maxEnemyMass * 1.3f)
+                break;
+
+            // check current direction
+            V2d enemyDir{maxEnemyX, maxEnemyY};
+            enemyDir.normalize();
+            const auto proj = enemyDir * vel;
+            const bool readySplit = proj > 0.8f;
+
+            return {{"X",     maxEnemyX},
+                    {"Y",     maxEnemyY},
+                    {"Split", readySplit}};
+        } while (false);
+
+        if ((V2d{mine[0]["X"].get<float>(), mine[0]["Y"].get<float>()} - randomInfluence_->getDst()).getNormSq() <
+            100.f) {
             randomInfluence_->update();
         }
 
@@ -65,7 +110,7 @@ private:
         f_->applyInfluence(*randomInfluence_);
         const auto dst = f_->getMin();
 
-        bool shouldSplit = mine[0]["M"].get<float>() > 200.f &&
+        bool shouldSplit = mine[0]["M"].get<float>() > 400.f &&
                            rand() % 100 > 98;
 
         return {{"X",     dst.x},

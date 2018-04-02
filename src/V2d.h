@@ -90,6 +90,10 @@ struct V2d {
         const auto c = std::cos(rad);
         return {x * c - y * s, x * s + y * c};
     }
+
+    float operator*(const V2d &rhs) const {
+        return x*rhs.x + y*rhs.y;
+    }
 };
 
 V2d operator*(float k, const V2d &rhs);

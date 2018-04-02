@@ -11,6 +11,6 @@ float RandomInfluence::probe(const V2d &v) const {
 }
 
 void RandomInfluence::update() {
-    dst_.x = rand()%static_cast<unsigned int>(w_);
-    dst_.y = rand()%static_cast<unsigned int>(h_);
+    dst_.x = 20.f + rand()%static_cast<unsigned int>(w_ - 40.f);
+    dst_.y = 20.f + rand()%static_cast<unsigned int>(h_ - 40.f);
 }
