@@ -15,6 +15,7 @@ public:
 private:
     V2d enemyPos_;
     float enemyPotential_;
+    float enemyRadius_;
 };
 
 

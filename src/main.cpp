@@ -43,28 +43,34 @@ private:
         auto mine = data["Mine"];
         auto objects = data["Objects"];
 
-        if ((V2d{mine[0]["X"].get<float>(), mine[0]["Y"].get<float>()} - randomInfluence_->getDst()).getNormSq() < 100.f) {
-            randomInfluence_->update();
-        }
-
         if (mine.empty()) {
             return {{"X",     0},
                     {"Y",     0},
                     {"Debug", "Died"}};
         }
 
-        for (auto &obj : objects) {
-            if (obj["T"] == "F") {
-                f_->applyInfluence(FoodInfluence({obj["X"].get<float>(), obj["Y"].get<float>()}));
-            } else if (obj["T"] == "P") {
-                f_->applyInfluence(EnemyInfluence(mine, obj));
+        if ((V2d{mine[0]["X"].get<float>(), mine[0]["Y"].get<float>()} - randomInfluence_->getDst()).getNormSq() < 100.f) {
+            randomInfluence_->update();
+        }
+
+        if (!objects.empty()) {
+            for (auto &obj : objects) {
+                if (obj["T"] == "F") {
+                    f_->applyInfluence(FoodInfluence({obj["X"].get<float>(), obj["Y"].get<float>()}));
+                } else if (obj["T"] == "P") {
+                    f_->applyInfluence(EnemyInfluence(mine, obj));
+                }
             }
         }
         f_->applyInfluence(*randomInfluence_);
         const auto dst = f_->getMin();
+
+        bool shouldSplit = mine[0]["M"].get<float>() > 200.f &&
+                           rand() % 100 > 98;
+
         return {{"X",     dst.x},
                 {"Y",     dst.y},
-                {"Split", rand() % 100 > 98}};
+                {"Split", shouldSplit}};
     }
 
 

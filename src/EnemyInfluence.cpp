@@ -1,19 +1,20 @@
 #include "EnemyInfluence.h"
 
 EnemyInfluence::EnemyInfluence(const nlohmann::json &mine, const nlohmann::json &enemy)
-        : enemyPos_{enemy["X"].get<float>(), enemy["Y"].get<float>()}, enemyPotential_(0.f) {
-    float myMinMass = 0.f;
+        : enemyPos_{enemy["X"].get<float>(), enemy["Y"].get<float>()}, enemyPotential_(0.f),
+          enemyRadius_(enemy["R"].get<float>()) {
+    float myMinMass = std::numeric_limits<float>::max();
     for (auto &&mpart: mine) {
         myMinMass = std::min(myMinMass, mpart["M"].get<float>());
     }
     const auto enemyMass = enemy["M"].get<float>();
     if (myMinMass > enemyMass * 1.5f) {
-        enemyPotential_ = -3.f;
-    } else if (myMinMass < enemyMass) {
-        enemyPotential_ = 10.f;
+        enemyPotential_ = -10.f;
+    } else if (myMinMass < enemyMass * 1.1f) {
+        enemyPotential_ = 100.f;
     }
 }
 
 float EnemyInfluence::probe(const V2d &v) const {
-    return enemyPotential_ / ((v - enemyPos_).getNormSq() + 1e-6f);
+    return (v - enemyPos_).getNormSq() < 3.f * enemyRadius_ ? enemyPotential_ : 0.f;
 }
