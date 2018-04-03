@@ -85,7 +85,7 @@ private:
             V2d enemyDir{maxEnemyX, maxEnemyY};
             enemyDir.normalize();
             const auto proj = enemyDir * vel;
-            const bool readySplit = proj > 0.8f;
+            const bool readySplit = proj > 0.9f;
 
             return {{"X",     maxEnemyX},
                     {"Y",     maxEnemyY},
