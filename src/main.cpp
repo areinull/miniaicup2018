@@ -10,14 +10,13 @@
 #include "RandomInfluence.h"
 #include "EnemyInfluence.h"
 
-using namespace std;
 using json = nlohmann::json;
 
 class Strategy {
 public:
     void run() {
-        string data;
-        cin >> data;
+        std::string data;
+        std::cin >> data;
         auto config = json::parse(data);
 
         std::srand(time(nullptr));
@@ -29,10 +28,10 @@ public:
                                                              config["GAME_HEIGHT"].get<int>());
 
         while (true) {
-            cin >> data;
+            std::cin >> data;
             auto parsed = json::parse(data);
             auto command = on_tick_(parsed, config);
-            cout << command.dump() << endl;
+            std::cout << command.dump() << std::endl;
             ++curTick_;
         }
     }
@@ -40,8 +39,8 @@ public:
 private:
     json on_tick_(const json &data, const json &config) {
         f_->reset();
-        auto mine = data["Mine"];
-        auto objects = data["Objects"];
+        const auto &mine = data.count("Mine")? data["Mine"]: json();
+        const auto &objects = data.count("Objects")? data["Objects"]: json();
 
         if (mine.empty()) {
             return {{"X",     0},
