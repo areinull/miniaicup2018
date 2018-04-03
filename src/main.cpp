@@ -3,9 +3,10 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <fstream>
+#include <unordered_set>
 
 #include "Field.h"
-#include "SimpleGradient.h"
 #include "FoodInfluence.h"
 #include "RandomInfluence.h"
 #include "EnemyInfluence.h"
@@ -15,6 +16,7 @@ using json = nlohmann::json;
 class Strategy {
 public:
     void run() {
+//        std::ofstream dbg_out("out");
         std::string data;
         std::cin >> data;
         auto config = json::parse(data);
@@ -29,6 +31,7 @@ public:
 
         while (true) {
             std::cin >> data;
+//            dbg_out << "==== " << curTick_ << " ====\n" << data << std::endl;
             auto parsed = json::parse(data);
             auto command = on_tick_(parsed, config);
             std::cout << command.dump() << std::endl;
@@ -46,6 +49,33 @@ private:
             return {{"X",     0},
                     {"Y",     0},
                     {"Debug", "Died"}};
+        }
+
+        if (!objects.empty()) {
+            std::unordered_set<unsigned int> foodToDelete;
+            for (auto &obj : objects) {
+                if (obj["T"] == "F") {
+                    const V2d pos{obj["X"].get<float>(), obj["Y"].get<float>()};
+                    const auto id = FoodInfluence::getId(pos);
+                    auto it = food_.find(id);
+                    if (it == food_.end()) {
+                        food_.emplace(id, FoodInfluence{pos, curTick_});
+                    } else {
+                        if (it->second.isDecayed(curTick_)) {
+                            foodToDelete.insert(id);
+                        } else {
+                            it->second.updateTick(curTick_);
+                        }
+                    }
+                }
+            }
+            for (auto it = food_.begin(); it != food_.end();) {
+                if (foodToDelete.count(it->first)) {
+                    it = food_.erase(it);
+                } else {
+                    ++it;
+                }
+            }
         }
 
         // check shoot
@@ -99,13 +129,30 @@ private:
 
         if (!objects.empty()) {
             for (auto &obj : objects) {
-                if (obj["T"] == "F") {
-                    f_->applyInfluence(FoodInfluence({obj["X"].get<float>(), obj["Y"].get<float>()}));
-                } else if (obj["T"] == "P") {
+                if (obj["T"] == "P") {
                     f_->applyInfluence(EnemyInfluence(mine, obj));
                 }
             }
         }
+
+        for (auto it = food_.begin(); it != food_.end();) {
+            // check if we eat it
+            bool eaten = false;
+            for (const auto &mpart: mine) {
+                if ((V2d{mpart["X"].get<float>(), mpart["Y"].get<float>()} - it->second.getPos()).getNormSq() <
+                    mpart["R"].get<float>() * mpart["R"].get<float>()) {
+                    eaten = true;
+                    break;
+                }
+            }
+            if (eaten) {
+                it = food_.erase(it);
+            } else {
+                f_->applyInfluence(it->second);
+                ++it;
+            }
+        }
+
         f_->applyInfluence(*randomInfluence_);
         const auto dst = f_->getMin();
 
@@ -121,6 +168,7 @@ private:
     unsigned int curTick_ = 0;
     std::unique_ptr<Field> f_;
     std::unique_ptr<RandomInfluence> randomInfluence_;
+    std::unordered_map<unsigned int, FoodInfluence> food_;
 };
 
 int main() {
