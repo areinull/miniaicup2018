@@ -68,20 +68,25 @@ private:
                 break;
 
             auto myMinMass = std::numeric_limits<float>::max();
-            V2d vel;
+            V2d vel, minPos;
             for (auto &mpart : mine) {
                 const auto mass = mpart["M"].get<float>();
                 if (mass < myMinMass) {
                     myMinMass = mass;
+                    minPos.x = mpart["X"].get<float>();
+                    minPos.y = mpart["Y"].get<float>();
                     vel.x = mpart["SX"].get<float>();
                     vel.y = mpart["SY"].get<float>();
                 }
             }
             if (myMinMass / 2.f < maxEnemyMass * 1.3f)
                 break;
+            if (vel.getNormSq() < 1e-4f)
+                break;
+            vel.normalize();
 
             // check current direction
-            V2d enemyDir{maxEnemyX, maxEnemyY};
+            V2d enemyDir{maxEnemyX - minPos.x, maxEnemyY - minPos.y};
             enemyDir.normalize();
             const auto proj = enemyDir * vel;
             const bool readySplit = proj > 0.9f;
@@ -92,15 +97,17 @@ private:
         } while (false);
 
         if ((V2d{mine[0]["X"].get<float>(), mine[0]["Y"].get<float>()} - randomInfluence_->getDst()).getNormSq() <
-            100.f) {
+            mine[0]["R"].get<float>()*mine[0]["R"].get<float>()*2.f) {
             randomInfluence_->update();
         }
 
+        bool enemyVisible = false;
         if (!objects.empty()) {
             for (auto &obj : objects) {
                 if (obj["T"] == "F") {
                     f_->applyInfluence(FoodInfluence({obj["X"].get<float>(), obj["Y"].get<float>()}));
                 } else if (obj["T"] == "P") {
+                    enemyVisible = true;
                     f_->applyInfluence(EnemyInfluence(mine, obj));
                 }
             }
@@ -108,8 +115,9 @@ private:
         f_->applyInfluence(*randomInfluence_);
         const auto dst = f_->getMin();
 
-        bool shouldSplit = mine[0]["M"].get<float>() > 400.f &&
-                           rand() % 100 > 98;
+        const bool shouldSplit = !enemyVisible &&
+                                 mine[0]["M"].get<float>() > 400.f &&
+                                 rand() % 100 > 98;
 
         return {{"X",     dst.x},
                 {"Y",     dst.y},
