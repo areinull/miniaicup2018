@@ -5,7 +5,6 @@
 #include <cstdlib>
 
 #include "Field.h"
-#include "SimpleGradient.h"
 #include "FoodInfluence.h"
 #include "RandomInfluence.h"
 #include "EnemyInfluence.h"
