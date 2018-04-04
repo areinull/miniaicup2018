@@ -8,6 +8,7 @@
 #include "FoodInfluence.h"
 #include "RandomInfluence.h"
 #include "EnemyInfluence.h"
+#include "MovePlanner.h"
 
 using json = nlohmann::json;
 
@@ -25,6 +26,7 @@ public:
                                      4);
         randomInfluence_ = std::make_unique<RandomInfluence>(config["GAME_WIDTH"].get<int>(),
                                                              config["GAME_HEIGHT"].get<int>());
+        movePlanner_ = std::make_unique<MovePlanner>(config);
 
         while (true) {
             std::cin >> data;
@@ -113,7 +115,7 @@ private:
             }
         }
         f_->applyInfluence(*randomInfluence_);
-        const auto dst = f_->getMin();
+        const auto dst = movePlanner_->plan(mine[0], f_->getMin());
 
         const bool shouldSplit = !enemyVisible &&
                                  mine[0]["M"].get<float>() > 400.f &&
@@ -128,6 +130,7 @@ private:
     unsigned int curTick_ = 0;
     std::unique_ptr<Field> f_;
     std::unique_ptr<RandomInfluence> randomInfluence_;
+    std::unique_ptr<MovePlanner> movePlanner_;
 };
 
 int main() {

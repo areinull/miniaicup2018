@@ -94,6 +94,10 @@ struct V2d {
     float operator*(const V2d &rhs) const {
         return x*rhs.x + y*rhs.y;
     }
+
+    float crossZ(const V2d &rhs) const {
+        return x*rhs.y - y*rhs.x;
+    }
 };
 
 V2d operator*(float k, const V2d &rhs);
