@@ -98,8 +98,19 @@ private:
                     {"Split", readySplit}};
         } while (false);
 
-        if ((V2d{mine[0]["X"].get<float>(), mine[0]["Y"].get<float>()} - randomInfluence_->getDst()).getNormSq() <
-            mine[0]["R"].get<float>()*mine[0]["R"].get<float>()*2.f) {
+        int maxMassIdx = 0;
+        {
+            float maxMass = mine[0]["M"].get<float>();
+            for (int i = 1; i < mine.size(); ++i) {
+                const auto mass = mine[i]["M"].get<float>();
+                if (mass > maxMass) {
+                    maxMass = mass;
+                    maxMassIdx = i;
+                }
+            }
+        }
+        if ((V2d{mine[maxMassIdx]["X"].get<float>(), mine[maxMassIdx]["Y"].get<float>()} - randomInfluence_->getDst()).getNormSq() <
+            mine[maxMassIdx]["R"].get<float>()*mine[maxMassIdx]["R"].get<float>()*2.f) {
             randomInfluence_->update();
         }
 
@@ -115,7 +126,7 @@ private:
             }
         }
         f_->applyInfluence(*randomInfluence_);
-        const auto dst = movePlanner_->plan(mine[0], f_->getMin());
+        const auto dst = movePlanner_->plan(mine, f_->getMin());
 
         const bool shouldSplit = !enemyVisible &&
                                  mine[0]["M"].get<float>() > 400.f &&
