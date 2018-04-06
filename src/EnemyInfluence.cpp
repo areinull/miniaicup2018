@@ -15,9 +15,9 @@ EnemyInfluence::EnemyInfluence(const nlohmann::json &mine, const nlohmann::json 
     avgPos /= totalMass;
     meDir_ = enemyPos_ - avgPos;
     const auto enemyMass = enemy["M"].get<float>();
-    if (myMinMass > enemyMass * 1.5f) {
-        enemyPotential_ = -10.f;
-    } else if (myMinMass < enemyMass * 1.1f) {
+    if (myMinMass > enemyMass * 1.2f) {
+        enemyPotential_ = -100.f;
+    } else if (myMinMass * 1.1f < enemyMass) {
         enemyPotential_ = 100.f;
     }
 }
