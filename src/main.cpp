@@ -134,6 +134,10 @@ private:
 
 int main() {
     Strategy strategy;
-    strategy.run();
+    try {
+        strategy.run();
+    } catch (const std::exception &e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
     return 0;
 }
