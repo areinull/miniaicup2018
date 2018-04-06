@@ -37,7 +37,7 @@ V2d MovePlanner::plan(const nlohmann::json &mine, const V2d &dst) const {
     const float crossProd = vel.crossZ(dirDst);
     const V2d dirDstPerp{-dirDst.y, dirDst.x};
 
-    return pos + dirDst + crossProd*dirDstPerp;
+    return pos + (dirDst + crossProd*dirDstPerp)*mine[maxMassIdx]["R"].get<float>()*1.2f;
 }
 
 bool MovePlanner::covered(const nlohmann::json &mine, const V2d &dst) const {
