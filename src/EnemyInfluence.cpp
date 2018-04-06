@@ -24,8 +24,10 @@ EnemyInfluence::EnemyInfluence(const nlohmann::json &mine, const nlohmann::json 
 
 float EnemyInfluence::probe(const V2d &v) const {
     const auto dir = v - enemyPos_;
-    if (dir.getNormSq() < 16.f * enemyRadius_ * enemyRadius_ ||
-        dir * meDir_ > 0.f ) {
+    if (dir.getNormSq() < 16.f * enemyRadius_ * enemyRadius_ ) {
+        return enemyPotential_;
+    }
+    if (enemyPotential_ > 0.f && dir * meDir_ > 0.f) {
         return enemyPotential_;
     }
     return 0.f;
