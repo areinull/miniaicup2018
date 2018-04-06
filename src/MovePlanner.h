@@ -11,6 +11,7 @@ public:
     MovePlanner(const nlohmann::json &config);
 
     V2d plan(const nlohmann::json &mine, const V2d &dst) const;
+    bool covered(const nlohmann::json &mine, const V2d &dst) const;
 
 private:
     const nlohmann::json &config_;

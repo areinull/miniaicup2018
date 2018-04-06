@@ -98,19 +98,7 @@ private:
                     {"Split", readySplit}};
         } while (false);
 
-        int maxMassIdx = 0;
-        {
-            float maxMass = mine[0]["M"].get<float>();
-            for (int i = 1; i < mine.size(); ++i) {
-                const auto mass = mine[i]["M"].get<float>();
-                if (mass > maxMass) {
-                    maxMass = mass;
-                    maxMassIdx = i;
-                }
-            }
-        }
-        if ((V2d{mine[maxMassIdx]["X"].get<float>(), mine[maxMassIdx]["Y"].get<float>()} - randomInfluence_->getDst()).getNormSq() <
-            mine[maxMassIdx]["R"].get<float>()*mine[maxMassIdx]["R"].get<float>()*2.f) {
+        if (movePlanner_->covered(mine, randomInfluence_->getDst())) {
             randomInfluence_->update();
         }
 

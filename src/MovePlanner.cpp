@@ -6,6 +6,10 @@ MovePlanner::MovePlanner(const nlohmann::json &config)
 }
 
 V2d MovePlanner::plan(const nlohmann::json &mine, const V2d &dst) const {
+    if (covered(mine, dst)) {
+        return dst;
+    }
+
     int maxMassIdx = 0;
     float maxMass = mine[0]["M"].get<float>();
     for (int i = 1; i < mine.size(); ++i) {
@@ -34,4 +38,17 @@ V2d MovePlanner::plan(const nlohmann::json &mine, const V2d &dst) const {
     const V2d dirDstPerp{-dirDst.y, dirDst.x};
 
     return pos + dirDst + crossProd*dirDstPerp;
+}
+
+bool MovePlanner::covered(const nlohmann::json &mine, const V2d &dst) const {
+    bool res = false;
+    for (const auto &mpart : mine) {
+        const V2d c{mpart["X"].get<float>(), mpart["Y"].get<float>()};
+        const auto r = mpart["R"].get<float>();
+        if ((c - dst).getNormSq() < r * r) {
+            res = true;
+            break;
+        }
+    }
+    return res;
 }
