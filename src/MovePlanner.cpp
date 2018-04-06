@@ -45,7 +45,7 @@ bool MovePlanner::covered(const nlohmann::json &mine, const V2d &dst) const {
     for (const auto &mpart : mine) {
         const V2d c{mpart["X"].get<float>(), mpart["Y"].get<float>()};
         const auto r = mpart["R"].get<float>();
-        if ((c - dst).getNormSq() < r * r) {
+        if ((c - dst).getNormSq() < r * r * 1.4f) {
             res = true;
             break;
         }
