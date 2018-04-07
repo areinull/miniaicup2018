@@ -117,6 +117,7 @@ private:
         }
         f_->applyInfluence(*randomInfluence_);
         if (enemyVisible) {
+            enemySeenTick_ = curTick_;
             for (auto &obj : objects) {
                 if (obj["T"] == "V") {
                     f_->applyInfluence(VirusInfluence(mine, obj));
@@ -125,9 +126,7 @@ private:
         }
         const auto dst = movePlanner_->plan(mine, f_->getMin());
 
-        const bool shouldSplit = !enemyVisible &&
-                                 mine[0]["M"].get<float>() > 400.f &&
-                                 rand() % 100 > 98;
+        const bool shouldSplit = curTick_ > enemySeenTick_ + 100;
 
         return {{"X",     dst.x},
                 {"Y",     dst.y},
@@ -136,6 +135,7 @@ private:
 
 
     unsigned int curTick_ = 0;
+    unsigned int enemySeenTick_ = 0;
     std::unique_ptr<Field> f_;
     std::unique_ptr<RandomInfluence> randomInfluence_;
     std::unique_ptr<MovePlanner> movePlanner_;
