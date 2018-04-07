@@ -71,6 +71,7 @@ private:
             if (maxEnemyMass < 0.f)
                 break;
 
+            enemySeenTick_ = curTick_;
             auto myMinMass = std::numeric_limits<float>::max();
             V2d vel, minPos;
             for (auto &mpart : mine) {
@@ -97,7 +98,8 @@ private:
 
             return {{"X",     maxEnemyX},
                     {"Y",     maxEnemyY},
-                    {"Split", readySplit}};
+                    {"Split", readySplit},
+                    {"Debug", "tick " + std::to_string(curTick_)}};
         } while (false);
 
         if (movePlanner_->covered(mine, randomInfluence_->getDst())) {
@@ -130,7 +132,8 @@ private:
 
         return {{"X",     dst.x},
                 {"Y",     dst.y},
-                {"Split", shouldSplit}};
+                {"Split", shouldSplit},
+                {"Debug", "tick " + std::to_string(curTick_)}};
     }
 
 
