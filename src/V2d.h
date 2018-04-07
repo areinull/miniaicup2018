@@ -81,7 +81,7 @@ struct V2d {
         return *this;
     }
 
-    V2d unit() {
+    V2d unit() const {
         return operator/(getNorm());
     }
 

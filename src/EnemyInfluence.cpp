@@ -24,14 +24,20 @@ EnemyInfluence::EnemyInfluence(const nlohmann::json &mine, const nlohmann::json 
 
 float EnemyInfluence::probe(const V2d &v) const {
     const auto dir = v - enemyPos_;
+    float result = 0.f;
     if (enemyPotential_ > 0.f) {
         if (dir.getNormSq() < 16.f * enemyRadius_ * enemyRadius_ || dir * meDir_ > 0.f) {
-            return enemyPotential_;
+            result += enemyPotential_;
+        }
+        // add little attraction in opposite direction
+        const auto attract = enemyPos_ - 10.f * enemyRadius_ * meDir_.unit();
+        if ((v - attract).getNormSq() < enemyRadius_*enemyRadius_) {
+            result -= 5.f;
         }
     } else {
         if (dir.getNormSq() < std::max(32.f, enemyRadius_ * enemyRadius_)) {
-            return enemyPotential_;
+            result += enemyPotential_;
         }
     }
-    return 0.f;
+    return result;
 }
