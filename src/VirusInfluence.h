@@ -16,6 +16,7 @@ public:
 
 private:
     const V2d pos_;
+    V2d mvDir_;
     bool active_ = false;
     float mineMaxRadius_ = 0.f;
 
