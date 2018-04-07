@@ -8,6 +8,7 @@
 #include "FoodInfluence.h"
 #include "RandomInfluence.h"
 #include "EnemyInfluence.h"
+#include "VirusInfluence.h"
 #include "MovePlanner.h"
 
 using json = nlohmann::json;
@@ -27,6 +28,7 @@ public:
         randomInfluence_ = std::make_unique<RandomInfluence>(config["GAME_WIDTH"].get<int>(),
                                                              config["GAME_HEIGHT"].get<int>());
         movePlanner_ = std::make_unique<MovePlanner>(config);
+        VirusInfluence::virusRadius = config["VIRUS_RADIUS"].get<float>();
 
         while (true) {
             std::cin >> data;
@@ -114,6 +116,13 @@ private:
             }
         }
         f_->applyInfluence(*randomInfluence_);
+        if (enemyVisible) {
+            for (auto &obj : objects) {
+                if (obj["T"] == "V") {
+                    f_->applyInfluence(VirusInfluence(mine, obj));
+                }
+            }
+        }
         const auto dst = movePlanner_->plan(mine, f_->getMin());
 
         const bool shouldSplit = !enemyVisible &&

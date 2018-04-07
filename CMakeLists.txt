@@ -19,6 +19,8 @@ set(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
            "${CMAKE_CURRENT_SOURCE_DIR}/src/EnemyInfluence.cpp"
            "${CMAKE_CURRENT_SOURCE_DIR}/src/EnemyInfluence.h"
            "${CMAKE_CURRENT_SOURCE_DIR}/src/MovePlanner.cpp"
-           "${CMAKE_CURRENT_SOURCE_DIR}/src/MovePlanner.h")
+           "${CMAKE_CURRENT_SOURCE_DIR}/src/MovePlanner.h"
+           "${CMAKE_CURRENT_SOURCE_DIR}/src/VirusInfluence.cpp"
+           "${CMAKE_CURRENT_SOURCE_DIR}/src/VirusInfluence.h")
 
 add_executable(strategy ${SOURCE} ${DEPS_SOURCE})
