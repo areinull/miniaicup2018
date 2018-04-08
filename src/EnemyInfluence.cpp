@@ -30,9 +30,15 @@ float EnemyInfluence::probe(const V2d &v) const {
             result += enemyPotential_;
         }
         // add little attraction in opposite direction
-        const auto attract = enemyPos_ - 10.f * enemyRadius_ * meDir_.unit();
+        const auto meDirUnit = meDir_.unit();
+        const auto attract = enemyPos_ - 10.f * enemyRadius_ * meDirUnit;
         if ((v - attract).getNormSq() < enemyRadius_*enemyRadius_) {
             result -= 5.f;
+        }
+        // add attraction gradient in opposite direction (works when attractor is out of field)
+        const auto oppositeDist = meDirUnit * dir;
+        if (oppositeDist < -enemyRadius_) {
+            result += oppositeDist * 0.001f;
         }
     } else {
         if (dir.getNormSq() < std::max(32.f, enemyRadius_ * enemyRadius_)) {
