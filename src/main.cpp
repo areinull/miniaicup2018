@@ -128,7 +128,7 @@ private:
         }
         const auto dst = movePlanner_->plan(mine, f_->getMin());
 
-        const bool shouldSplit = curTick_ > enemySeenTick_ + 100;
+        const bool shouldSplit = curTick_ > enemySeenTick_ + 200;
 
         return {{"X",     dst.x},
                 {"Y",     dst.y},
