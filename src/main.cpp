@@ -9,6 +9,7 @@
 #include "RandomInfluence.h"
 #include "EnemyInfluence.h"
 #include "VirusInfluence.h"
+#include "CornerInflience.h"
 #include "MovePlanner.h"
 
 using json = nlohmann::json;
@@ -29,6 +30,7 @@ public:
                                                              config["GAME_HEIGHT"].get<int>());
         movePlanner_ = std::make_unique<MovePlanner>(config);
         VirusInfluence::virusRadius = config["VIRUS_RADIUS"].get<float>();
+        cornerInfluence_ = std::make_unique<CornerInflience>(config);
 
         while (true) {
             std::cin >> data;
@@ -125,6 +127,7 @@ private:
                     f_->applyInfluence(VirusInfluence(mine, obj));
                 }
             }
+            f_->applyInfluence(*cornerInfluence_);
         }
         const auto dst = movePlanner_->plan(mine, f_->getMin());
 
@@ -142,6 +145,7 @@ private:
     std::unique_ptr<Field> f_;
     std::unique_ptr<RandomInfluence> randomInfluence_;
     std::unique_ptr<MovePlanner> movePlanner_;
+    std::unique_ptr<CornerInflience> cornerInfluence_;
 };
 
 int main() {
