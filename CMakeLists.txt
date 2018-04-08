@@ -23,6 +23,8 @@ set(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
            "${CMAKE_CURRENT_SOURCE_DIR}/src/VirusInfluence.cpp"
            "${CMAKE_CURRENT_SOURCE_DIR}/src/VirusInfluence.h"
            "${CMAKE_CURRENT_SOURCE_DIR}/src/CornerInflience.cpp"
-           "${CMAKE_CURRENT_SOURCE_DIR}/src/CornerInflience.h")
+           "${CMAKE_CURRENT_SOURCE_DIR}/src/CornerInflience.h"
+           "${CMAKE_CURRENT_SOURCE_DIR}/src/ScopeTimer.cpp"
+           "${CMAKE_CURRENT_SOURCE_DIR}/src/ScopeTimer.h")
 
 add_executable(strategy ${SOURCE} ${DEPS_SOURCE})

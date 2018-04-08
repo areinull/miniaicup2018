@@ -11,6 +11,7 @@
 #include "VirusInfluence.h"
 #include "CornerInflience.h"
 #include "MovePlanner.h"
+#include "ScopeTimer.h"
 
 using json = nlohmann::json;
 
@@ -43,6 +44,7 @@ public:
 
 private:
     json on_tick_(const json &data, const json &config) {
+        const ScopeTimer scopeTimer;
         f_->reset();
         const auto &mine = data.count("Mine")? data["Mine"]: json();
         const auto &objects = data.count("Objects")? data["Objects"]: json();
@@ -101,7 +103,8 @@ private:
             return {{"X",     maxEnemyX},
                     {"Y",     maxEnemyY},
                     {"Split", readySplit},
-                    {"Debug", "tick " + std::to_string(curTick_)}};
+                    {"Debug", "tick " + std::to_string(curTick_) +
+                              " elapsed (ms) " + std::to_string(scopeTimer.getDurationMs())}};
         } while (false);
 
         if (movePlanner_->covered(mine, randomInfluence_->getDst())) {
@@ -136,7 +139,8 @@ private:
         return {{"X",     dst.x},
                 {"Y",     dst.y},
                 {"Split", shouldSplit},
-                {"Debug", "tick " + std::to_string(curTick_)}};
+                {"Debug", "tick " + std::to_string(curTick_) +
+                          " elapsed (ms) " + std::to_string(scopeTimer.getDurationMs())}};
     }
 
 
