@@ -12,12 +12,14 @@ V2d MovePlanner::plan(const nlohmann::json &mine, const V2d &dst) const {
 
     int maxMassIdx = 0;
     float maxMass = mine[0]["M"].get<float>();
+    float minRaduis = mine[0]["R"].get<float>();
     for (int i = 1; i < mine.size(); ++i) {
         float mass = mine[i]["M"].get<float>();
         if (mass > maxMass) {
             maxMass = mass;
             maxMassIdx = i;
         }
+        minRaduis = std::min(minRaduis, mine[i]["R"].get<float>());
     }
     V2d vel{mine[maxMassIdx]["SX"].get<float>(), mine[maxMassIdx]["SY"].get<float>()};
     V2d pos{mine[maxMassIdx]["X"].get<float>(), mine[maxMassIdx]["Y"].get<float>()};
@@ -37,7 +39,16 @@ V2d MovePlanner::plan(const nlohmann::json &mine, const V2d &dst) const {
     const float crossProd = vel.crossZ(dirDst);
     const V2d dirDstPerp{-dirDst.y, dirDst.x};
 
-    return pos + (dirDst + crossProd*dirDstPerp)*mine[maxMassIdx]["R"].get<float>()*5.f;
+    auto res = pos + (dirDst + crossProd*dirDstPerp)*mine[maxMassIdx]["R"].get<float>()*5.f;
+
+    // clamp with Rmin offset
+    const auto maxX = config_["GAME_WIDTH"].get<float>(),
+               maxY = config_["GAME_HEIGHT"].get<float>();
+    res.x = std::max(res.x, minRaduis);
+    res.x = std::min(res.x, maxX - minRaduis);
+    res.y = std::max(res.y, minRaduis);
+    res.y = std::min(res.y, maxY - minRaduis);
+    return res;
 }
 
 bool MovePlanner::covered(const nlohmann::json &mine, const V2d &dst) const {
