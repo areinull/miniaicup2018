@@ -11,6 +11,7 @@ class EnemyInfluence : public Influence {
 public:
     EnemyInfluence(const nlohmann::json &mine, const nlohmann::json &enemy);
     float probe(const V2d &v) const override;
+    bool isDangerous() const;
 
 private:
     V2d enemyPos_;

@@ -47,3 +47,7 @@ float EnemyInfluence::probe(const V2d &v) const {
     }
     return result;
 }
+
+bool EnemyInfluence::isDangerous() const {
+    return enemyPotential_ > 0.f;
+}

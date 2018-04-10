@@ -107,30 +107,36 @@ private:
                               " elapsed (ms) " + std::to_string(scopeTimer.getDurationMs())}};
         } while (false);
 
-        if (movePlanner_->covered(mine, randomInfluence_->getDst())) {
+        if (randomInfluence_->updateRequested() || movePlanner_->covered(mine, randomInfluence_->getDst())) {
             randomInfluence_->update();
         }
 
         bool enemyVisible = false;
+        bool enemyDangerous = false;
         if (!objects.empty()) {
             for (auto &obj : objects) {
                 if (obj["T"] == "F") {
                     f_->applyInfluence(FoodInfluence({obj["X"].get<float>(), obj["Y"].get<float>()}));
                 } else if (obj["T"] == "P") {
                     enemyVisible = true;
-                    f_->applyInfluence(EnemyInfluence(mine, obj));
+                    const EnemyInfluence enemyInfluence(mine, obj);
+                    enemyDangerous = enemyDangerous || enemyInfluence.isDangerous();
+                    f_->applyInfluence(enemyInfluence);
                 }
             }
         }
         f_->applyInfluence(*randomInfluence_);
         if (enemyVisible) {
             enemySeenTick_ = curTick_;
+            if (enemyDangerous) {
+                randomInfluence_->requestUpdate();
+                f_->applyInfluence(*cornerInfluence_);
+            }
             for (auto &obj : objects) {
                 if (obj["T"] == "V") {
                     f_->applyInfluence(VirusInfluence(mine, obj));
                 }
             }
-            f_->applyInfluence(*cornerInfluence_);
         }
         const auto dst = movePlanner_->plan(mine, f_->getMin());
 
