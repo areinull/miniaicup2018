@@ -144,7 +144,7 @@ private:
     }
 
 
-    unsigned int curTick_ = 0;
+    unsigned int curTick_ = 1;
     unsigned int enemySeenTick_ = 0;
     std::unique_ptr<Field> f_;
     std::unique_ptr<RandomInfluence> randomInfluence_;
