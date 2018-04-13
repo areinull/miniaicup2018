@@ -1,8 +1,8 @@
 #include "EnemyInfluence.h"
+#include "EnemyPredictor.h"
 
-EnemyInfluence::EnemyInfluence(const nlohmann::json &mine, const nlohmann::json &enemy)
-        : enemyPos_{enemy["X"].get<float>(), enemy["Y"].get<float>()}, enemyPotential_(0.f),
-          enemyRadius_(enemy["R"].get<float>()) {
+EnemyInfluence::EnemyInfluence(const nlohmann::json &mine, const EnemyPredictor &enemy)
+        : enemyPotential_(0.f), enemyRadius_(enemy.getRadius()) {
     V2d avgPos{0.f,0.f};
     float totalMass = 0.f;
     float myMinMass = std::numeric_limits<float>::max();
@@ -13,13 +13,15 @@ EnemyInfluence::EnemyInfluence(const nlohmann::json &mine, const nlohmann::json 
         avgPos += V2d{mpart["X"].get<float>(), mpart["Y"].get<float>()} * mass;
     }
     avgPos /= totalMass;
-    meDir_ = enemyPos_ - avgPos;
-    const auto enemyMass = enemy["M"].get<float>();
+    const auto enemyMass = enemy.getMass();
     if (myMinMass > enemyMass * 1.2f) {
         enemyPotential_ = -100.f;
+        enemyPos_ = enemy.estimatePos(5);
     } else if (myMinMass * 1.1f < enemyMass) {
         enemyPotential_ = 100.f;
+        enemyPos_ = enemy.estimatePos(0);
     }
+    meDir_ = enemyPos_ - avgPos;
 }
 
 float EnemyInfluence::probe(const V2d &v) const {

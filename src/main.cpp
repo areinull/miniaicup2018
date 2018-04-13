@@ -71,12 +71,13 @@ private:
                     continue;
                 const V2d pos{obj["X"].get<float>(), obj["Y"].get<float>()};
                 const auto mass = obj["M"].get<float>();
+                const auto radius = obj["R"].get<float>();
                 auto e = enemyPredictors_.find(obj["Id"].get<std::string>());
                 if (e == enemyPredictors_.end()) {
-                    enemyPredictors_.emplace(obj["Id"].get<std::string>(), EnemyPredictor{pos, mass, curTick_});
+                    enemyPredictors_.emplace(obj["Id"].get<std::string>(), EnemyPredictor{pos, mass, radius, curTick_});
                     continue;
                 } else {
-                    e->second.update(pos, mass, curTick_);
+                    e->second.update(pos, mass, radius, curTick_);
                 }
             }
         }
@@ -132,19 +133,20 @@ private:
             randomInfluence_->update();
         }
 
-        bool enemyVisible = false;
-        bool enemyDangerous = false;
         if (!objects.empty()) {
             for (auto &obj : objects) {
                 if (obj["T"] == "F") {
                     f_->applyInfluence(FoodInfluence({obj["X"].get<float>(), obj["Y"].get<float>()}));
-                } else if (obj["T"] == "P") {
-                    enemyVisible = true;
-                    const EnemyInfluence enemyInfluence(mine, obj);
-                    enemyDangerous = enemyDangerous || enemyInfluence.isDangerous();
-                    f_->applyInfluence(enemyInfluence);
                 }
             }
+        }
+        bool enemyVisible = false;
+        bool enemyDangerous = false;
+        for (auto &e : enemyPredictors_) {
+            enemyVisible = true;
+            const EnemyInfluence enemyInfluence(mine, e.second);
+            enemyDangerous = enemyDangerous || enemyInfluence.isDangerous();
+            f_->applyInfluence(enemyInfluence);
         }
         f_->applyInfluence(*randomInfluence_);
         if (enemyVisible) {

@@ -7,9 +7,11 @@
 #include "../nlohmann/json.hpp"
 #include "V2d.h"
 
+class EnemyPredictor;
+
 class EnemyInfluence : public Influence {
 public:
-    EnemyInfluence(const nlohmann::json &mine, const nlohmann::json &enemy);
+    EnemyInfluence(const nlohmann::json &mine, const EnemyPredictor &enemy);
     float probe(const V2d &v) const override;
     bool isDangerous() const;
 
