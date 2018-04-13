@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <unordered_map>
 
 #include "Field.h"
 #include "FoodInfluence.h"
@@ -12,6 +13,7 @@
 #include "CornerInflience.h"
 #include "MovePlanner.h"
 #include "ScopeTimer.h"
+#include "EnemyPredictor.h"
 
 using json = nlohmann::json;
 
@@ -55,25 +57,44 @@ private:
                     {"Debug", "Died"}};
         }
 
+        for (auto e = enemyPredictors_.begin(); e != enemyPredictors_.end();) {
+            if (curTick_ - e->second.getTickSeen() > 20) {
+                e = enemyPredictors_.erase(e);
+            } else {
+                ++e;
+            }
+        }
+
+        if (!objects.empty()) {
+            for (auto &obj : objects) {
+                if (obj["T"] != "P")
+                    continue;
+                const V2d pos{obj["X"].get<float>(), obj["Y"].get<float>()};
+                const auto mass = obj["M"].get<float>();
+                auto e = enemyPredictors_.find(obj["Id"].get<std::string>());
+                if (e == enemyPredictors_.end()) {
+                    enemyPredictors_.emplace(obj["Id"].get<std::string>(), EnemyPredictor{pos, mass, curTick_});
+                    continue;
+                } else {
+                    e->second.update(pos, mass, curTick_);
+                }
+            }
+        }
+
         // check shoot
         do {
-            if (objects.empty())
-                break;
             float maxEnemyMass = -1.f;
-            float maxEnemyX, maxEnemyY;
-            for (auto &obj : objects) {
-                if (obj["T"] == "P") {
-                    const auto mass = obj["M"].get<float>();
-                    if (mass > maxEnemyMass) {
-                        maxEnemyMass = mass;
-                        maxEnemyX = obj["X"].get<float>();
-                        maxEnemyY = obj["Y"].get<float>();
-                    }
-
+            std::string maxEnemyId;
+            for (auto &e : enemyPredictors_) {
+                const auto mass = e.second.getMass();
+                if (mass > maxEnemyMass) {
+                    maxEnemyMass = mass;
+                    maxEnemyId = e.first;
                 }
             }
             if (maxEnemyMass < 0.f)
                 break;
+            const V2d maxEnemyPos = enemyPredictors_.at(maxEnemyId).estimatePos(5);
 
             enemySeenTick_ = curTick_;
             auto myMinMass = std::numeric_limits<float>::max();
@@ -95,13 +116,13 @@ private:
             vel.normalize();
 
             // check current direction
-            V2d enemyDir{maxEnemyX - minPos.x, maxEnemyY - minPos.y};
+            V2d enemyDir = maxEnemyPos - minPos;
             enemyDir.normalize();
             const auto proj = enemyDir * vel;
             const bool readySplit = proj > 0.9f;
 
-            return {{"X",     maxEnemyX},
-                    {"Y",     maxEnemyY},
+            return {{"X",     maxEnemyPos.x},
+                    {"Y",     maxEnemyPos.y},
                     {"Split", readySplit},
                     {"Debug", "tick " + std::to_string(curTick_) +
                               " elapsed (ms) " + std::to_string(scopeTimer.getDurationMs())}};
@@ -156,6 +177,7 @@ private:
     std::unique_ptr<RandomInfluence> randomInfluence_;
     std::unique_ptr<MovePlanner> movePlanner_;
     std::unique_ptr<CornerInflience> cornerInfluence_;
+    std::unordered_map<std::string, EnemyPredictor> enemyPredictors_;
 };
 
 int main() {
