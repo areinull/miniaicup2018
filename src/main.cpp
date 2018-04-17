@@ -140,7 +140,13 @@ private:
         }
         const auto dst = movePlanner_->plan(mine, f_->getMin());
 
-        const bool shouldSplit = curTick_ > enemySeenTick_ + 200;
+        float myMaxMass = 0.f;
+        for (const auto &mpart : mine) {
+            myMaxMass = std::max(myMaxMass, mpart["M"].get<float>());
+        }
+
+        const bool shouldSplit = curTick_ > enemySeenTick_ + 200 &&
+                                 myMaxMass > 300;
 
         return {{"X",     dst.x},
                 {"Y",     dst.y},
